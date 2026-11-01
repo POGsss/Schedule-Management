@@ -1,0 +1,45 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.14.4
+    hooks:
+      - id: ruff
+      - id: ruff-format
+  - repo: local
+    hooks:
+      - id: prettier
+        name: Prettier
+        entry: node scripts/check_format.mjs
+        language: system
+        types_or: [javascript, jsx, ts, tsx, json, yaml, markdown, css]
+      - id: mypy
+        name: mypy
+        entry: python scripts/run_backend_tool.py mypy --strict
+        language: system
+        types: [python]
+      - id: frontend-lint
+        name: ESLint
+        entry: npm --prefix frontend run lint
+        language: system
+        types_or: [javascript, jsx, ts, tsx]
+        pass_filenames: false
+      - id: frontend-tests
+        name: Frontend unit tests
+        entry: node scripts/run_frontend_tests.mjs
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
+      - id: backend-tests
+        name: Backend unit tests
+        entry: python scripts/run_backend_tool.py pytest --cov=backend --cov-branch --cov-fail-under=80
+        language: system
+        pass_filenames: false
+        stages: [pre-push]
