@@ -1,0 +1,1 @@
+"""School schedule application backend."""

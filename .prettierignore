@@ -1,0 +1,7 @@
+frontend/node_modules/
+frontend/dist/
+frontend/package-lock.json
+frontend/coverage/
+reference/
+AGENTS.md
+docs/DEVELOPMENT_PHASE.md

@@ -1,0 +1,53 @@
+name: Quality checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      - run: node ../scripts/check_format.mjs
+      - if: ${{ hashFiles('frontend/src/**/*') != '' }}
+        run: npm run format:check
+      - if: ${{ hashFiles('frontend/src/**/*') != '' }}
+        run: npm run lint
+      - if: ${{ hashFiles('frontend/src/**/*') != '' }}
+        run: npm run typecheck
+      - if: ${{ hashFiles('frontend/src/**/*') != '' }}
+        run: npm run test:coverage
+      - if: ${{ hashFiles('frontend/src/**/*') != '' }}
+        run: npm run build
+
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - run: python -m pip install -r requirements.lock
+      - if: ${{ hashFiles('backend/app/**/*.py') != '' }}
+        run: ruff check .
+      - if: ${{ hashFiles('backend/app/**/*.py') != '' }}
+        run: ruff format --check .
+      - if: ${{ hashFiles('backend/app/**/*.py') != '' }}
+        run: mypy --strict backend
+      - if: ${{ hashFiles('backend/app/**/*.py') != '' }}
+        run: pytest --cov=backend --cov-branch --cov-report=term-missing --cov-fail-under=80
